@@ -32,7 +32,7 @@ export default function Header() {
           {/* Login Button */}
           <Link
             href="/login"
-            className="rounded-full bg-[#28394b] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[#1f2e3b]"
+            className="rounded-full bg-[#4c6177] px-4 py-1.5 text-sm font-medium text-white transition hover:bg-[#1f2e3b]"
           >
             Login
           </Link>
