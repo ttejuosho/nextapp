@@ -1,9 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
-import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import {
+  ModuleRegistry,
+  RowSelectionModule,
+  AllCommunityModule,
+} from "ag-grid-community";
 import { themeBalham } from "ag-grid-community";
+import { Mail } from "lucide-react";
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -24,7 +29,6 @@ export default function AGTable<T>({
   fetchData,
   initialPage = 1,
   rowsPerPage = 100,
-  searchEnabled = true,
 }: AGTableProps<T>) {
   const gridRef = useRef<any>(null);
   const [data, setData] = useState<T[]>([]);
@@ -33,6 +37,12 @@ export default function AGTable<T>({
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageSize, setPageSize] = useState(rowsPerPage);
+
+  const rowSelection = useMemo(() => {
+    return {
+      mode: "multiRow",
+    };
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -53,28 +63,64 @@ export default function AGTable<T>({
     gridRef.current = params.api;
   };
 
-  // const onPaginationChanged = () => {
-  //   if (!gridRef.current) return;
-  //   const currentPage = gridRef.current.paginationGetCurrentPage() + 1;
-  //   setPage(currentPage);
-  // };
-
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
     setPage(1);
   };
+
+  const handleSendEmail = () => {
+    const selected = gridRef.current?.getSelectedRows() || [];
+    if (selected.length === 0) {
+      alert("No rows selected.");
+      return;
+    }
+    const selectedEmails = selected.map((row: any) => row.userEmail);
+
+    console.log("Sending email to: ", selectedEmails);
+    // TODO: call backend API to send emails
+  };
+
+  const enhancedColumns = [
+    {
+      field: "__options",
+      headerName: "",
+      width: 60,
+      cellRenderer: (params: any) => (
+        <Mail
+          className="w-4 h-4 text-blue-300 hover:text-blue-500 cursor-pointer"
+          onClick={() => handleSendEmail([params.data.userEmail])}
+        />
+      ),
+      suppressMenu: true,
+      sortable: false,
+      filter: false,
+      pinned: "left",
+    },
+    ...columns,
+  ];
+
   const totalPages = Math.ceil(total / pageSize);
   return (
     <div className="w-full">
-      {searchEnabled && (
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={onSearchChange}
-          className="mb-2 p-2 border rounded w-64"
-        />
-      )}
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search..."
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value);
+          setPage(1);
+        }}
+        className="mb-3 p-2 border rounded w-64"
+      />
+
+      {/* Action Button */}
+      <button
+        onClick={handleSendEmail}
+        className="mb-3 px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+      >
+        Send Email to Selected
+      </button>
 
       <div
         className="ag-theme-balham"
@@ -83,8 +129,9 @@ export default function AGTable<T>({
         <AgGridReact
           theme={themeBalham}
           rowData={data}
-          columnDefs={columns}
+          columnDefs={enhancedColumns}
           onGridReady={onGridReady}
+          rowSelection={rowSelection} // <-- enables selecting many rows
           paginationPageSize={rowsPerPage}
         />
       </div>

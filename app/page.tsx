@@ -29,7 +29,6 @@ export default function HomePage() {
 
   const columns = useMemo(
     () => [
-      { field: "userId", headerName: "ID" },
       {
         field: "userName",
         headerName: "Username",
