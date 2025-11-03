@@ -14,7 +14,10 @@ export default function CreateUserForm({ onClose }: { onClose: () => void }) {
     console.log("Creating user:", form);
 
     // TODO: POST to backend: /api/create-user
-    // await fetch("/api/users", { method: "POST", body: JSON.stringify(form) });
+    await fetch("http://localhost:3001/api/users", {
+      method: "POST",
+      body: JSON.stringify(form),
+    });
 
     onClose();
   };
